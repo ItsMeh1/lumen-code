@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Lumen Code</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="style.css"></head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs>
+<symbol id="i-logo" viewBox="0 0 24 24"><path d="M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2z"/></symbol>
+<symbol id="i-files" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></symbol>
+<symbol id="i-newfile" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 11v6M9 14h6"/></symbol>
+<symbol id="i-newfolder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 10v5M9.5 12.5h5"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></symbol>
+<symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+<symbol id="i-chevd" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+<symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><path d="M7 5v14l12-7z"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></symbol>
+<symbol id="i-panel" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 15h18"/></symbol>
+<symbol id="i-sidebar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></symbol>
+<symbol id="i-term" viewBox="0 0 24 24"><path d="M5 8l4 4-4 4M12 16h7"/></symbol>
+<symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3.5 3.5 3.5 14.500 0 18M12 3c-3.500 3.500-3.500 14.500 0 18"/></symbol>
+<symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.500-5.800M20 4v5h-5"/></symbol>
+<symbol id="i-ext" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+</defs></svg>
+
+<div id="app">
+ <div id="title">
+  <svg class="ic lg" style="color:#4fc1ff"><use href="#i-logo"/></svg>
+  <button id="cc" data-c="quick"><svg class="ic"><use href="#i-search"/></svg><span>Lumen Code</span></button>
+  <div class="tr"><button id="t-side" data-c="side" title="Toggle Sidebar (Ctrl+B)"><svg class="ic"><use href="#i-sidebar"/></svg></button>
+   <button id="t-panel" data-c="panel" title="Toggle Console (Ctrl+J)"><svg class="ic"><use href="#i-panel"/></svg></button></div>
+ </div>
+ <div id="body">
+  <div id="act">
+   <button data-v="explorer" title="Explorer (Ctrl+Shift+E)"><svg class="ic xl"><use href="#i-files"/></svg></button>
+   <button data-v="search" title="Search (Ctrl+Shift+F)"><svg class="ic xl"><use href="#i-search"/></svg></button>
+   <span style="flex:1"></span>
+   <button data-v="settings" title="Settings"><svg class="ic xl"><use href="#i-sliders"/></svg></button>
+  </div>
+  <div id="side">
+   <div class="v" id="v-explorer"><div class="sh"><span>EXPLORER</span>
+    <span class="acts"><button data-c="newfile" title="New File (Alt+N)"><svg class="ic"><use href="#i-newfile"/></svg></button>
+    <button data-c="newfolder" title="New Folder"><svg class="ic"><use href="#i-newfolder"/></svg></button>
+    <button data-c="upload" title="Upload Files / ZIP"><svg class="ic"><use href="#i-upload"/></svg></button>
+    <button data-c="zip" title="Download Workspace as ZIP"><svg class="ic"><use href="#i-download"/></svg></button></span></div>
+    <div class="sec">SANDBOX WORKSPACE</div><div id="tree" tabindex="0"></div></div>
+   <div class="v" id="v-search" hidden><div class="sh"><span>SEARCH</span></div>
+    <div class="pad"><input id="sq" placeholder="Search in files"></div><div id="sres"></div></div>
+   <div class="v" id="v-settings" hidden><div class="sh"><span>SETTINGS</span></div>
+    <div class="pad set">
+     <label>Editor font size<span class="stp"><button id="fzm">-</button><b id="fzv"></b><button id="fzp">+</button></span></label>
+     <label><input type="checkbox" id="live"> Live-reload preview while typing</label>
+     <button class="btn" id="wipe">Delete entire workspace</button>
+     <p class="mu">Files are stored in this browser (localStorage). Use Download ZIP to back up.</p></div></div>
+  </div>
+  <div class="sash" id="sash1"></div>
+  <div id="main">
+   <div id="ed">
+    <div id="tabs"><div id="tabl"></div><div id="tabact"><button data-c="run" title="Run / Open Preview (Ctrl+Enter)"><svg class="ic"><use href="#i-play"/></svg></button></div></div>
+    <div id="crumb"></div>
+    <div id="stage">
+     <div id="welcome"><svg class="ic" style="width:96px;height:96px;color:#4fc1ff;opacity:.35;stroke-width:1"><use href="#i-logo"/></svg>
+      <h1>Lumen Code</h1><p>A zero-setup code sandbox that lives in your browser</p>
+      <div class="wl"><button data-c="newfile">New File<kbd>Alt+N</kbd></button><button data-c="upload">Upload Files or ZIP</button>
+      <button data-c="quick">Go to File<kbd>Ctrl+P</kbd></button><button data-c="palette">Command Palette<kbd>Ctrl+Shift+P</kbd></button>
+      <button data-c="side">Toggle Sidebar<kbd>Ctrl+B</kbd></button></div></div>
+     <div id="editor" hidden><div id="gut"></div><div id="cw"><div id="cl"></div><pre id="hl"></pre>
+      <textarea id="ta" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off"></textarea></div></div>
+     <div id="preview" hidden><div class="pbar"><button data-c="refresh" title="Refresh"><svg class="ic"><use href="#i-refresh"/></svg></button>
+      <div id="addr"></div><button data-c="popout" title="Open in new browser tab"><svg class="ic"><use href="#i-ext"/></svg></button></div>
+      <iframe id="fr" sandbox="allow-scripts allow-modals allow-forms allow-popups"></iframe></div>
+    </div>
+   </div>
+   <div class="sash h" id="sash2"></div>
+   <div id="panel"><div class="ph"><span class="pt">CONSOLE <i id="ecount"></i></span>
+    <span class="acts" style="display:flex"><button data-c="clearcon" title="Clear Console"><svg class="ic"><use href="#i-trash"/></svg></button>
+    <button data-c="panel" title="Close"><svg class="ic"><use href="#i-close"/></svg></button></span></div><div id="con"></div></div>
+  </div>
+ </div>
+ <div id="status">
+  <button class="blue" data-c="side"><svg class="ic"><use href="#i-logo"/></svg>Lumen Sandbox</button>
+  <button data-c="panel"><svg class="ic"><use href="#i-term"/></svg>Console</button>
+  <span style="flex:1"></span><span id="pos"></span><span id="sp">Spaces: 2</span><span>UTF-8</span><span id="lang"></span>
+  <button data-c="run"><svg class="ic"><use href="#i-play"/></svg>Run</button>
+ </div>
+</div>
+<div id="qp" hidden><div id="qb"><input id="qi"><div id="ql"></div></div></div>
+<div id="ctx" hidden></div><div id="toast" hidden></div><input type="file" id="up" multiple hidden>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="app.js"></script>
+</body></html>
