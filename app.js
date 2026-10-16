@@ -4,15 +4,21 @@ const ic=(n,s='')=>`<svg class="ic" style="${s}"><use href="#i-${n}"/></svg>`;
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const PV='::preview',base=p=>p.replace(/\/$/,'').split('/').pop(),ext=p=>p.includes('.')?p.split('.').pop().toLowerCase():'';
 const parentOf=p=>p.replace(/[^/]*\/?$/,''),BIN=/\.(png|jpe?g|gif|webp|ico|bmp|pdf|woff2?|ttf|otf|mp[34]|webm|exe|dll)$/i;
-const LANG={html:'xml',htm:'xml',xml:'xml',svg:'xml',js:'javascript',mjs:'javascript',jsx:'javascript',ts:'typescript',tsx:'typescript',css:'css',json:'json',md:'markdown',py:'python',java:'java',c:'c',cpp:'cpp',cs:'csharp',go:'go',rs:'rust',php:'php',rb:'ruby',sh:'bash',sql:'sql',yml:'yaml',yaml:'yaml'};
+const LANG={html:'xml',htm:'xml',xml:'xml',svg:'xml',js:'javascript',mjs:'javascript',jsx:'javascript',ts:'typescript',tsx:'typescript',css:'css',json:'json',md:'markdown',py:'python',java:'java',c:'c',cpp:'cpp',cs:'csharp',go:'go',rs:'rust',php:'php',rb:'ruby',sh:'bash',sql:'sql',lua:'lua',kt:'kotlin',swift:'swift',scss:'scss',less:'less',h:'c',cc:'cpp',cxx:'cpp',hpp:'cpp',pl:'perl',r:'r',yml:'yaml',yaml:'yaml'};
 const FC={html:'#e44d26',htm:'#e44d26',css:'#42a5f5',js:'#e8d44d',mjs:'#e8d44d',jsx:'#61dafb',ts:'#3178c6',tsx:'#3178c6',json:'#cbcb41',md:'#519aba',py:'#4b8bbe',svg:'#ffb13b'};
 const S={fs:{},open:[],active:null,exp:[''],view:'explorer',side:true,panel:false,sw:260,ph:200,fz:14,live:true};
-try{Object.assign(S,JSON.parse(localStorage.getItem('lumen.v1')||'{}'))}catch(e){}
-let fs=S.fs,exp=new Set(S.exp),sel='',cur='',edit=null,last=null,dirty=true,t1,t2,tt,errs=0,qItems=[],qIdx=0;
+let P={},curId='';
+const rd=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},uid=()=>'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+(function(){const old=rd('lumen.v1')||{};Object.assign(S,old,rd('lumen.ui')||{});P=rd('lumen.projects')||{};try{curId=localStorage.getItem('lumen.cur')||''}catch(e){}
+ if(!Object.keys(P).length){curId=uid();P[curId]={name:'My Project',fs:old.fs||{},open:old.open||[],active:old.active||null,exp:old.exp||[''],t:Date.now()}}
+ if(!P[curId])curId=Object.keys(P)[0];const p=P[curId];S.fs=p.fs;S.open=p.open||[];S.active=p.active;S.exp=p.exp||[''];
+ try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}})();
+let fs=S.fs,exp=new Set(S.exp),sel='',cur='',edit=null,last=null,dirty=true,t1,t2,tt,errs=0,qItems=[],qIdx=0,qAsk=null;
 S.open=S.open.filter(p=>p===PV||p in fs);if(!S.open.includes(S.active))S.active=S.open[0]||null;
 const ta=$('#ta'),fi=p=>ic('file','color:'+(FC[ext(p)]||'#9aa5b1'));
 const lh=()=>Math.round(S.fz*1.45);
-function save(){S.exp=[...exp];try{localStorage.setItem('lumen.v1',JSON.stringify(S))}catch(e){}}
+function save(){S.exp=[...exp];if(!P[curId])return;P[curId]={...P[curId],fs:S.fs,open:S.open,active:S.active,exp:S.exp,t:Date.now()};
+ try{localStorage.setItem('lumen.projects',JSON.stringify(P));localStorage.setItem('lumen.cur',curId);const {fs:a,open:b,active:c,exp:d,...ui}=S;localStorage.setItem('lumen.ui',JSON.stringify(ui))}catch(e){}}
 function toast(m,fn){const t=$('#toast');t.innerHTML=esc(m)+(fn?'<button>Undo</button>':'');t.hidden=false;if(fn)t.querySelector('button').onclick=()=>{fn();t.hidden=true};clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,4500)}
 function dirs(p){const a=p.split('/');a.pop();let c='';a.forEach(d=>{c+=d+'/';if(!(c in fs))fs[c]=null;exp.add(c)})}
 const key=p=>{const f=p.endsWith('/'),a=p.replace(/\/$/,'').split('/');return a.map((s,i)=>(i<a.length-1||f?'0':'1')+s.toLowerCase()).join('/')};
@@ -70,7 +76,7 @@ function pos(){const v=ta.value.slice(0,ta.selectionStart).split('\n');$('#pos')
  $('#cl').style.top=(8+(v.length-1)*lh()-ta.scrollTop)+'px'}
 function sync(){$('#hl').scrollTop=ta.scrollTop;$('#hl').scrollLeft=ta.scrollLeft;$('#gut').scrollTop=ta.scrollTop;pos()}
 function show(){const a=S.active,pv=a===PV;if(a&&!pv)last=a;
- acHide();tabs();tree();crumb();$('#welcome').hidden=!!a;$('#editor').hidden=!a||pv;$('#preview').hidden=!pv;
+ acHide();projName();tabs();tree();crumb();$('#welcome').hidden=!!a;$('#editor').hidden=!a||pv;$('#preview').hidden=!pv;
  $('#pos').hidden=$('#sp').hidden=$('#lang').hidden=!a||pv;
  if(a&&!pv){ta.value=fs[a];hl();pos();ta.focus()}
  if(pv&&dirty)build();save()}
@@ -112,6 +118,8 @@ let pvHtml='';
 function build(){dirty=false;const isH=p=>p&&/\.html?$/.test(p);
  let en=isH(last)?last:('index.html' in fs?'index.html':Object.keys(fs).find(isH)),h;
  if(en)h=fs[en];else if(last&&/\.m?js$/.test(last)){en=last;h=`<body><script src="${base(last)}"><\/script></body>`}
+ else if(last&&/\.md$/i.test(last)){en=last;h=`<body style="font:15px/1.6 system-ui;max-width:760px;margin:24px auto;padding:0 16px"><div id="o"></div><script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"><\/script><script>document.getElementById("o").innerHTML=marked.parse(${sj(fs[last])})<\/script></body>`}
+ else if(last&&/\.svg$/i.test(last)){en=last;h=`<body style="margin:0;display:grid;place-items:center;height:100vh;background:#fff">${fs[last]}</body>`}
  else{en='';h='<body style="font:15px system-ui;color:#888;display:grid;place-items:center;height:90vh;margin:0">Create an index.html (or open a .js file) to preview it.</body>'}
  const rs=r=>{try{return new URL(r,'http://x/'+en).pathname.slice(1)}catch(e){return r}};
  h=h.replace(/<link[^>]*>/gi,m=>{const r=/href=["']([^"']+)["']/i.exec(m),f=r&&fs[rs(r[1])];return r&&/stylesheet/i.test(m)&&typeof f==='string'?`<style>${f}</style>`:m})
@@ -122,15 +130,29 @@ function openPreview(){if(!S.open.includes(PV))S.open.push(PV);S.active=PV;dirty
 function clearCon(){$('#con').innerHTML='';errs=0;$('#ecount').textContent=''}
 addEventListener('message',e=>{const d=e.data;if(d&&d.lumen&&e.source===$('#fr').contentWindow){const x=document.createElement('div');x.className=d.t;x.textContent=d.m;$('#con').appendChild(x);$('#con').scrollTop=1e9;
  if(d.t==='error'){errs++;$('#ecount').textContent=errs;if(!S.panel){S.panel=true;layout()}}}});
+/* ---------- projects ---------- */
+const fcount=p=>Object.keys(p.fs).filter(k=>!k.endsWith('/')).length;
+function projName(){const n=P[curId].name;$('#pn span').textContent=n;$('#sec').innerHTML='<span>'+esc(n.toUpperCase())+'</span>'+ic('chevd');document.title=n+' - Lumen Code'}
+function loadProject(id){curId=id;const p=P[id];S.fs=fs=p.fs;S.open=(p.open||[]).filter(x=>x===PV||x in fs);S.active=S.open.includes(p.active)?p.active:S.open[0]||null;exp=new Set(p.exp||['']);sel=cur='';last=null;dirty=true;clearCon();$('#fr').srcdoc='';show()}
+function switchProject(id){if(id===curId)return;save();loadProject(id);save();toast('Opened project: '+P[id].name)}
+function newProject(){qask('New project name','',n=>{save();const id=uid();P[id]={name:n,fs:{},open:[],active:null,exp:[''],t:Date.now()};loadProject(id);save()})}
+function renameProject(){qask('Rename project',P[curId].name,n=>{P[curId].name=n;projName();save()})}
+function delProject(){const id=curId,snap=P[id];save();delete P[id];let nid=Object.keys(P)[0];if(!nid){nid=uid();P[nid]={name:'My Project',fs:{},open:[],active:null,exp:[''],t:Date.now()}}loadProject(nid);save();toast('Deleted project '+snap.name,()=>{P[id]=snap;switchProject(id)})}
+function projItems(q){save();return [...Object.entries(P).sort((a,b)=>b[1].t-a[1].t).map(([id,p])=>({l:p.name,h:fcount(p)+' files'+(id===curId?' - current':''),f:()=>switchProject(id)})),{l:'+ New Project...',h:'',f:newProject},{l:'Rename Current Project...',h:'',f:renameProject},{l:'Delete Current Project',h:'',f:delProject}].filter(i=>fz(q,i.l))}
+function qask(label,def,cb){qAsk=cb;qItems=[];$('#qp').hidden=false;const i=$('#qi');i.placeholder=label;i.value=def||'';i.focus();i.select();$('#ql').innerHTML=`<div class="qr"><small>${esc(label)} - Enter to confirm, Esc to cancel</small></div>`}
 /* ---------- language runners (loaded from CDNs, executed in the sandboxed iframe) ---------- */
-const sj=s=>JSON.stringify(s).replace(/</g,'\\u003c'),RUNX=/^(py|ts|lua|sql|js)$/;
+const sj=s=>JSON.stringify(s).replace(/</g,'\\u003c'),RUNX=/^(py|ts|lua|sql|js|rb|php|c|cc|cpp|cxx)$/;
 const RUN={
  py:'<script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"><\/script><script>(async()=>{console.info("Loading Python runtime (first run downloads ~10 MB)...");try{const py=await loadPyodide();py.setStdout({batched:s=>console.log(s)});py.setStderr({batched:s=>console.error(s)});py.setStdin({stdin:()=>prompt("input()")});await py.loadPackagesFromImports(CODE);await py.runPythonAsync(CODE);console.info("Finished.")}catch(e){console.error(String(e.message||e))}})()<\/script>',
  ts:'<script src="https://cdn.jsdelivr.net/npm/typescript@5.5.4/lib/typescript.js"><\/script><script>try{var exports={},module={exports};(0,eval)(ts.transpileModule(CODE,{compilerOptions:{target:99,module:1}}).outputText)}catch(e){console.error(String(e))}<\/script>',
  lua:'<script src="https://cdn.jsdelivr.net/npm/fengari-web@0.1.4/dist/fengari-web.js"><\/script><script>try{fengari.load(CODE)()}catch(e){console.error(String(e))}<\/script>',
  sql:'<script src="https://cdn.jsdelivr.net/npm/alasql@4.5.2/dist/alasql.min.js"><\/script><script>try{const n=alasql.parse(CODE).statements.length,r=alasql(CODE);(n>1?r:[r]).forEach(x=>console.log(typeof x==="object"?JSON.stringify(x,null,2):String(x)))}catch(e){console.error(String(e))}<\/script>'};
+Object.assign(RUN,{
+ rb:'<script src="https://cdn.jsdelivr.net/npm/@ruby/wasm-wasi@2.7.1/dist/browser.umd.js"><\/script><script>(async()=>{console.info("Loading Ruby runtime (first run is a large download, ~25 MB)...");try{const {DefaultRubyVM}=window["ruby-wasm-wasi"];const m=await WebAssembly.compileStreaming(await fetch("https://cdn.jsdelivr.net/npm/@ruby/3.3-wasm-wasi@2.7.1/dist/ruby+stdlib.wasm"));const {vm}=await DefaultRubyVM(m);vm.eval(CODE)}catch(e){console.error(String(e.message||e))}})()<\/script>',
+ php:'<script type="module">import {PhpWeb} from "https://cdn.jsdelivr.net/npm/php-wasm/PhpWeb.mjs";let o="";const p=new PhpWeb;p.addEventListener("output",e=>{o+=[].concat(e.detail).join("")});p.addEventListener("error",e=>console.error([].concat(e.detail).join("")));p.addEventListener("ready",async()=>{try{await p.run(CODE)}catch(e){console.error(String(e))}console.log(o)});<\/script>',
+ cpp:'<script src="https://cdn.jsdelivr.net/npm/JSCPP@2.0.9/dist/JSCPP.es5.min.js"><\/script><script>try{let o="";JSCPP.run(CODE,"",{stdio:{write:s=>{o+=s}}});console.log(o)}catch(e){console.error(String(e))}<\/script>'});
 function runCode(p){const x=ext(p),c=fs[p];clearCon();S.panel=true;layout();dirty=true;
- const b=x==='js'?`<script>${c.replace(/<\/script/gi,'<\\/script')}<\/script>`:`<script>const CODE=${sj(c)}<\/script>`+RUN[x];
+ const b=x==='js'?`<script>${c.replace(/<\/script/gi,'<\\/script')}<\/script>`:`<script>const CODE=${sj(c)}<\/script>`+RUN[({c:'cpp',cc:'cpp',cxx:'cpp'})[x]||x];
  const d=document.createElement('div');d.className='info';d.textContent='Running '+p+' ...';$('#con').appendChild(d);
  pvHtml=BR+b;$('#fr').srcdoc=pvHtml}
 function runActive(){const p=S.active&&S.active!==PV?S.active:last,x=p?ext(p):'',web=Object.keys(fs).some(k=>/\.html?$/.test(k));
@@ -185,7 +207,8 @@ async function exportZip(){if(!window.JSZip)return toast('JSZip failed to load (
  if(!n)return toast('Workspace is empty');dl(await z.generateAsync({type:'blob'}),'lumen-workspace.zip')}
 async function addFiles(list){let n=0;for(const f of list){try{
  if(/\.zip$/i.test(f.name)&&window.JSZip){const z=await JSZip.loadAsync(f);for(const [rp,en] of Object.entries(z.files))if(!en.dir&&!BIN.test(rp)&&!rp.startsWith('__MACOSX')){dirs(rp);fs[rp]=await en.async('string');n++}}
- else if(!BIN.test(f.name)){const k=cur+f.name;dirs(k);fs[k]=await f.text();n++}}catch(e){}}
+ else if(!BIN.test(f.name)){const t=await f.text();let bk=null;if(/\.json$/i.test(f.name)){try{const j=JSON.parse(t);if(j&&j.lumen===1&&j.projects)bk=j}catch(e){}}
+  if(bk){Object.entries(bk.projects).forEach(([id,p])=>{P[P[id]?uid():id]=p});n+=Object.keys(bk.projects).length}else{const k=cur+f.name;dirs(k);fs[k]=t;n++}}}catch(e){}}
  dirty=true;toast(n+' file(s) added');show()}
 $('#up').onchange=e=>{addFiles(e.target.files);e.target.value=''};
 addEventListener('dragover',e=>e.preventDefault());addEventListener('drop',e=>{e.preventDefault();if(e.dataTransfer.files.length)addFiles(e.dataTransfer.files)});
@@ -213,19 +236,21 @@ const CMD={
  explorer:['Show Explorer','Ctrl+Shift+E',()=>setView('explorer',1)],search:['Search in Files','Ctrl+Shift+F',()=>setView('search',1)],settings:['Open Settings','',()=>setView('settings',1)],
  zoomin:['Zoom In Editor','Ctrl+=',()=>zoom(1)],zoomout:['Zoom Out Editor','Ctrl+-',()=>zoom(-1)],zip:['Download Workspace as ZIP','',exportZip],
  dlfile:['Download Active File','',()=>{const p=S.active;if(p&&p!==PV)dl(new Blob([fs[p]]),base(p))}],clearcon:['Clear Console','',clearCon],
+ projects:['Switch Project...','Alt+P',()=>qp('@')],newproject:['New Project...','',newProject],renameproject:['Rename Project...','',renameProject],delproject:['Delete Project','',delProject],
+ backup:['Backup All Projects (download JSON)','',()=>{save();dl(new Blob([JSON.stringify({lumen:1,projects:P})],{type:'application/json'}),'lumen-backup.json')}],
  quick:['Go to File...','Ctrl+P',()=>qp('')],palette:['Show All Commands','Ctrl+Shift+P',()=>qp('>')]};
 document.addEventListener('click',e=>{const b=e.target.closest('[data-c]');if(b&&CMD[b.dataset.c])CMD[b.dataset.c][2]()});
 const fz=(q,s)=>{q=q.toLowerCase();s=s.toLowerCase();let i=0;for(const c of s)if(c===q[i])i++;return i>=q.length};
-function qp(v){$('#qp').hidden=false;const i=$('#qi');i.value=v;i.focus();qlist()}
-function qlist(){const v=$('#qi').value;
- qItems=v.startsWith('>')?Object.values(CMD).filter(c=>fz(v.slice(1).trim(),c[0])).map(c=>({l:c[0],h:c[1],f:c[2]}))
+function qp(v){qAsk=null;$('#qp').hidden=false;const i=$('#qi');i.placeholder='';i.value=v;i.focus();qlist()}
+function qlist(){if(qAsk)return;const v=$('#qi').value;
+ qItems=v.startsWith('@')?projItems(v.slice(1).trim()):v.startsWith('>')?Object.values(CMD).filter(c=>fz(v.slice(1).trim(),c[0])).map(c=>({l:c[0],h:c[1],f:c[2]}))
   :Object.keys(fs).filter(p=>typeof fs[p]==='string'&&fz(v.trim(),p)).map(p=>({l:base(p),h:p,f:()=>openFile(p)}));
  qIdx=0;qdraw()}
 function qdraw(){$('#ql').innerHTML=qItems.map((x,i)=>`<div class="qr${i===qIdx?' on':''}" data-i="${i}"><span>${esc(x.l)}</span><small>${esc(x.h)}</small></div>`).join('')||'<div class="qr"><small>No matching results</small></div>'}
 function qrun(i){const x=qItems[i];$('#qp').hidden=true;if(x)x.f()}
 $('#qi').oninput=qlist;$('#ql').onclick=e=>{const r=e.target.closest('.qr[data-i]');if(r)qrun(+r.dataset.i)};
 $('#qi').onkeydown=e=>{if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();qIdx=(qIdx+(e.key==='ArrowDown'?1:-1)+qItems.length)%Math.max(1,qItems.length);qdraw();const o=$('#ql .on');o&&o.scrollIntoView({block:'nearest'})}
- else if(e.key==='Enter')qrun(qIdx);else if(e.key==='Escape')$('#qp').hidden=true};
+ else if(e.key==='Enter'){if(qAsk){const f=qAsk,v=$('#qi').value.trim();qAsk=null;$('#qp').hidden=true;if(v)f(v)}else qrun(qIdx)}else if(e.key==='Escape')$('#qp').hidden=true};
 $('#qp').onmousedown=e=>{if(e.target.id==='qp')$('#qp').hidden=true};
 addEventListener('keydown',e=>{const m=e.ctrlKey||e.metaKey,k=e.key.toLowerCase(),x=c=>{e.preventDefault();CMD[c][2]()};
  if(m&&e.shiftKey&&k==='p')x('palette');else if(m&&!e.shiftKey&&k==='p')x('quick');
@@ -233,6 +258,6 @@ addEventListener('keydown',e=>{const m=e.ctrlKey||e.metaKey,k=e.key.toLowerCase(
  else if(m&&k==='b')x('side');else if(m&&k==='j')x('panel');
  else if(m&&k==='s'){e.preventDefault();save();toast('Saved to browser storage')}
  else if((m&&e.key==='Enter')||e.key==='F5')x('run');
- else if(e.altKey&&k==='n')x('newfile');else if(e.altKey&&k==='w')x('closetab');
+ else if(e.altKey&&k==='p')x('projects');else if(e.altKey&&k==='n')x('newfile');else if(e.altKey&&k==='w')x('closetab');
  else if(m&&(e.key==='='||e.key==='+'))x('zoomin');else if(m&&e.key==='-')x('zoomout')});
 layout();show();
