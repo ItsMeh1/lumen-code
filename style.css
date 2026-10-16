@@ -98,3 +98,5 @@ kbd{color:#999;font:11px Consolas,monospace;background:#ffffff12;padding:1px 6px
 #ac{position:absolute;z-index:20;width:240px;background:#252526;border:1px solid #454545;box-shadow:0 2px 8px #000a;border-radius:4px;padding:2px;font:13px "Segoe UI",system-ui,sans-serif}
 .ar{display:flex;justify-content:space-between;gap:10px;padding:0 6px;height:22px;align-items:center;cursor:pointer;border-radius:3px;white-space:nowrap}
 .ar.on{background:#04395e;color:#fff}.ar small{color:#8a8a8a;font-size:11px}
+#pn{margin-left:8px;padding:2px 8px;border-radius:4px;color:#ccc;max-width:220px;height:24px}#pn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#pn:hover{background:#ffffff1a}
+.sec{cursor:pointer;display:flex;justify-content:space-between;align-items:center}.sec:hover{background:#ffffff14}
