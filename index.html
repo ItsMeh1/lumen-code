@@ -29,6 +29,7 @@
 <div id="app">
  <div id="title">
   <svg class="ic lg" style="color:#4fc1ff"><use href="#i-logo"/></svg>
+  <button id="pn" data-c="projects" title="Switch Project (Alt+P)"><span></span><svg class="ic"><use href="#i-chevd"/></svg></button>
   <button id="cc" data-c="quick"><svg class="ic"><use href="#i-search"/></svg><span>Lumen Code</span></button>
   <div class="tr"><button id="t-side" data-c="side" title="Toggle Sidebar (Ctrl+B)"><svg class="ic"><use href="#i-sidebar"/></svg></button>
    <button id="t-panel" data-c="panel" title="Toggle Console (Ctrl+J)"><svg class="ic"><use href="#i-panel"/></svg></button></div>
@@ -46,7 +47,7 @@
     <button data-c="newfolder" title="New Folder"><svg class="ic"><use href="#i-newfolder"/></svg></button>
     <button data-c="upload" title="Upload Files / ZIP"><svg class="ic"><use href="#i-upload"/></svg></button>
     <button data-c="zip" title="Download Workspace as ZIP"><svg class="ic"><use href="#i-download"/></svg></button></span></div>
-    <div class="sec">SANDBOX WORKSPACE</div><div id="tree" tabindex="0"></div></div>
+    <div class="sec" id="sec" data-c="projects" title="Switch Project (Alt+P)"></div><div id="tree" tabindex="0"></div></div>
    <div class="v" id="v-search" hidden><div class="sh"><span>SEARCH</span></div>
     <div class="pad"><input id="sq" placeholder="Search in files"></div><div id="sres"></div></div>
    <div class="v" id="v-settings" hidden><div class="sh"><span>SETTINGS</span></div>
@@ -65,6 +66,7 @@
      <div id="welcome"><svg class="ic" style="width:96px;height:96px;color:#4fc1ff;opacity:.35;stroke-width:1"><use href="#i-logo"/></svg>
       <h1>Lumen Code</h1><p>A zero-setup code sandbox that lives in your browser</p>
       <div class="wl"><button data-c="newfile">New File<kbd>Alt+N</kbd></button><button data-c="upload">Upload Files or ZIP</button>
+      <button data-c="projects">Projects: Switch or New<kbd>Alt+P</kbd></button>
       <button data-c="quick">Go to File<kbd>Ctrl+P</kbd></button><button data-c="palette">Command Palette<kbd>Ctrl+Shift+P</kbd></button>
       <button data-c="side">Toggle Sidebar<kbd>Ctrl+B</kbd></button></div></div>
      <div id="editor" hidden><div id="gut"></div><div id="cw"><div id="cl"></div><pre id="hl"></pre>
